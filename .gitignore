@@ -1,0 +1,22 @@
+# Thư mục môi trường ảo và cache Python
+venv/
+__pycache__/
+*.pyc
+
+# Các file Model NẶNG và dữ liệu LỚN (RẤT QUAN TRỌNG)
+model.ckpt
+*.safetensors
+
+# Thư mục chứa các file đầu ra, dữ liệu tạm thời, và cache
+output/
+data/
+precomputed_feats/
+
+# Cấu hình IDE cá nhân
+.vscode/
+
+# Các thư mục chứa dependency đã compile (nếu có)
+ldm/
+
+# Thư mục và file cài đặt dependency tạm thời
+taming-transformers/
