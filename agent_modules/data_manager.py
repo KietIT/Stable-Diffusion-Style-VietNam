@@ -3,10 +3,20 @@ import random
 from typing import Optional
 
 KEYWORD_MAPPING = {
+    # Content (Locations)
     "dinh độc lập": "dinh_doc_lap",
-    "hồ gươm": "ho_guom",
+    "chùa ngọc hoàng": "chua_ngoc_hoang",
+    "địa đạo củ chi": "dia_dao_cu_chi",
+    # Style
     "đông hồ": "dong_ho",
     "sơn mài": "son_mai",
+    "dân tộc thiểu số": "dan_toc_thieu_so",
+    "hàng trống": "hang_trong",
+    "khắc gỗ": "khac_go",
+    "lụa": "lua",
+    "làng sinh huế": "lang_sinh_hue",
+    "sơn dầu": "son_dau",
+    # Object
     "nón lá": "non_la"
 }
 
@@ -68,7 +78,7 @@ def get_available_keywords() -> dict:
         Dictionary mapping categories to lists of available keywords
     """
     return {
-        "locations": ["dinh độc lập", "hồ gươm"],
-        "styles": ["đông hồ", "sơn mài"],
+        "locations": ["dinh độc lập", "chùa ngọc hoàng", "địa đạo củ chi"],
+        "styles": ["đông hồ", "sơn mài", "dân tộc thiểu số", "hàng trống", "khắc gỗ", "lụa", "làng sinh huế", "sơn dầu"],
         "objects": ["nón lá"]
     }

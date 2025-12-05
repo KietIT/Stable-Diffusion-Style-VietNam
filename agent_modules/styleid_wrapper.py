@@ -12,7 +12,6 @@ def run_style_transfer(content_path: str, style_path: str, output_dir: str = "ou
     
     # 1. Định vị thư mục gốc (nơi chứa run_styleid.py, giả định file này nằm 1 cấp trên agent_modules)
     # Lấy đường dẫn tuyệt đối của folder chứa run_styleid.py
-    # Giả định styleid_wrapper.py nằm trong agent_modules/
     root_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
     run_styleid_script = os.path.join(root_dir, "run_styleid.py")
     
