@@ -97,33 +97,59 @@ def run_style_transfer(content_path: str, style_path: str, output_dir: str = "ou
         shutil.rmtree(temp_sty_dir)
         
         if os.path.exists(output_image_path):
-            print(f"Stylized image saved to: {output_image_path}")
-            return output_image_path
+            print(f"[OUTPUT] Stylized image saved to: {output_image_path}")
+            final_output_path = output_image_path
         else:
-            print(f"Warning: Expected output not found at {output_image_path}. Looking for latest output file...")
-            # Logic tìm file mới nhất (đã giữ nguyên logic cũ của anh)
+            print(f"[WARNING] Expected output not found at {output_image_path}. Looking for latest output file...")
+            # Logic tìm file mới nhất
             output_files = [f for f in os.listdir(output_path) if f.endswith('.png')]
             if output_files:
                 latest_file = max(
                     [os.path.join(output_path, f) for f in output_files],
                     key=os.path.getctime
                 )
-                print(f"Found output image: {latest_file}")
-                return latest_file
-            
-            return None
+                print(f"[OUTPUT] Found output image: {latest_file}")
+                final_output_path = latest_file
+        
+        # --- DỌN DẸP THƯ MỤC TẠM SAU KHI ĐÃ TÌM ĐƯỢC OUTPUT ---
+        try:
+            if os.path.exists(temp_cnt_dir):
+                shutil.rmtree(temp_cnt_dir)
+                print(f"[CLEANUP] Removed temp folder: {temp_cnt_dir}")
+            if os.path.exists(temp_sty_dir):
+                shutil.rmtree(temp_sty_dir)
+                print(f"[CLEANUP] Removed temp folder: {temp_sty_dir}")
+        except Exception as cleanup_error:
+            print(f"[WARNING] Could not cleanup temp folders: {cleanup_error}")
+        
+        return final_output_path
             
     except subprocess.CalledProcessError as e:
-        print(f"Error executing StyleID: {e}")
-        print(f"StyleID Error Output: {e.stderr}")
+        print(f"[ERROR] Error executing StyleID: {e}")
+        print(f"[ERROR] StyleID Error Output: {e.stderr}")
         
         # Dọn dẹp cả khi có lỗi
-        if os.path.exists(temp_cnt_dir):
-            shutil.rmtree(temp_cnt_dir)
-        if os.path.exists(temp_sty_dir):
-            shutil.rmtree(temp_sty_dir)
+        try:
+            if os.path.exists(temp_cnt_dir):
+                shutil.rmtree(temp_cnt_dir)
+                print(f"[CLEANUP] Removed temp folder: {temp_cnt_dir}")
+            if os.path.exists(temp_sty_dir):
+                shutil.rmtree(temp_sty_dir)
+                print(f"[CLEANUP] Removed temp folder: {temp_sty_dir}")
+        except Exception as cleanup_error:
+            print(f"[WARNING] Could not cleanup temp folders: {cleanup_error}")
             
         return None
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        print(f"[ERROR] Unexpected error: {e}")
+        
+        # Dọn dẹp cả khi có lỗi không mong đợi
+        try:
+            if os.path.exists(temp_cnt_dir):
+                shutil.rmtree(temp_cnt_dir)
+            if os.path.exists(temp_sty_dir):
+                shutil.rmtree(temp_sty_dir)
+        except:
+            pass
+            
         return None
