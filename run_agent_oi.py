@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-"""
-AI Agent for Vietnamese Art Director - Open Interpreter Version
-Uses Open Interpreter with local Llama 3.1 via Ollama
-This version properly configures the interpreter to execute Python code.
-"""
-
 import os
 import sys
 
@@ -41,32 +34,31 @@ def setup_interpreter():
     interpreter.system_message = """Bạn là AI Art Director thực thụ. Bạn ĐANG KẾT NỐI TRỰC TIẾP với hệ thống xử lý ảnh.
 
 QUY TẮC BẤT DI BẤT DỊCH (CRITICAL RULES):
-1. CÁC HÀM SAU TỒN TẠI TRONG MODULE `agent_modules`:
-   - `get_random_image(category, keyword)` trong agent_modules.data_manager
-   - `run_style_transfer(content_path, style_path)` trong agent_modules.styleid_wrapper
-   - `insert_object(background_path, object_path)` trong agent_modules.object_insert
+1. CÁC HÀM SAU TỒN TẠI TRONG MODULE `agent_modules` VỚI CHỮ KÝ CỐ ĐỊNH:
+   - `get_random_image(category, keyword)` - CHỈ 2 THAM SỐ!
+     Tham số 1: 'cnt', 'sty', hoặc 'obj'
+     Tham số 2: Keyword (VD: 'Dinh Độc Lập', 'son_dau', 'non_la')
+   - `run_style_transfer(content_path, style_path)` - CHỈ 2 THAM SỐ!
+   - `insert_object(background_path, object_path)` - CHỈ 2 THAM SỐ!
    
 2. BẮT BUỘC: PHẢI IMPORT các hàm này ở ĐẦU CODE.
 3. KHÔNG BAO GIỜ định nghĩa lại các hàm này bằng `def`.
 4. KHÔNG BAO GIỜ dùng dữ liệu giả (dummy dictionaries/paths).
-5. NHIỆM VỤ DUY NHẤT: Import và GỌI các hàm với tham số thực.
+5. KHÔNG BAO GIỜ gọi hàm với số tham số SAI (VD: 3 tham số thay vì 2).
+6. NHIỆM VỤ DUY NHẤT: Import và GỌI các hàm với ĐÚNG SỐ THAM SỐ.
 
 TUYỆT ĐỐI CẤM (ANTI-PATTERNS):
-1. TUYỆT ĐỐI CẤM TRẢ VỀ JSON thuần túy (như `{"type": "function", "name": "get_random_image", ...}`).
+1. TUYỆT ĐỐI CẤM TRẢ VỀ JSON thuần túy.
 2. KHÔNG BAO GIỜ chỉ liệt kê tham số hoặc mô tả hàm.
 3. KHÔNG BAO GIỜ trả về text giải thích mà không có code.
-4. BẮT BUỘC phải đặt code trong khối markdown Python:
-   ```python
-   # Code thực thi ở đây
-   ```
-
+4. BẮT BUỘC phải đặt code trong khối markdown Python.
 5. BẮT BUỘC: Mỗi câu trả lời PHẢI bắt đầu bằng ```python
 6. BẮT BUỘC TRẢ VỀ CODE PYTHON TRONG KHỐI MARKDOWN, KHÔNG PHẢI JSON.
 
-KEYWORDS HỢP LỆ:
-- Content: "dinh độc lập", "hồ gươm", "chùa ngọc hoàng", "địa đạo củ chi"
-- Style: "đông hồ", "sơn mài", "dân tộc thiểu số", "hàng trống", "khắc gỗ", "lụa", "làng sinh huế", "sơn dầu"
-- Object: "nón lá"
+DANH SÁCH CỐ ĐỊNH:
+- 8 Phong cách: đông hồ, sơn mài, sơn dầu, làng sinh huế, lụa, khắc gỗ, hàng trống, dân tộc thiểu số
+- 185 Di tích lịch sử (trích xuất tên từ yêu cầu)
+- 1 Đối tượng: nón lá
 
 VÍ DỤ ĐÚNG (BẮT BUỘC LÀM NHƯ VẬY):
 ```python
@@ -76,8 +68,8 @@ from agent_modules.styleid_wrapper import run_style_transfer
 from agent_modules.object_insert import insert_object
 
 # 2. Tìm ảnh content và style
-content_img = get_random_image('cnt', 'dinh độc lập')
-style_img = get_random_image('sty', 'đông hồ')
+content_img = get_random_image('cnt', 'Dinh Độc Lập')
+style_img = get_random_image('sty', 'dong_ho')
 print(f"Content: {content_img}")
 print(f"Style: {style_img}")
 
@@ -87,24 +79,19 @@ if content_img and style_img:
     print(f"Stylized: {result}")
     
     # 4. Thêm object nếu cần
-    obj_img = get_random_image('obj', 'nón lá')
-    if obj_img:
-        final = insert_object(result, obj_img)
-        print(f"Final: {final}")
+    if 'nón' in user_request.lower():
+        obj_img = get_random_image('obj', 'non_la')
+        if obj_img:
+            final = insert_object(result, obj_img)
+            print(f"Final: {final}")
 ```
 
 VÍ DỤ SAI (TUYỆT ĐỐI KHÔNG LÀM):
 ```json
 {
   "type": "function",
-  "name": "get_random_image",
-  "arguments": {"category": "cnt", "keyword": "dinh độc lập"}
+  "name": "get_random_image"
 }
-```
-
-HOẶC:
-```
-Tôi sẽ gọi hàm get_random_image với tham số...
 ```
 
 LƯU Ý:
@@ -155,13 +142,13 @@ def print_welcome():
     print("=" * 60)
     print("\nChào mừng! Tôi là trợ lý nghệ thuật AI của bạn.")
     print("\nBạn có thể yêu cầu tôi tạo tác phẩm nghệ thuật bằng cách kết hợp:")
-    print("  [Địa điểm] Dinh Độc Lập, Hồ Gươm, Chùa Ngọc Hoàng, Địa Đạo Củ Chi")
-    print("  [Phong cách] Đông Hồ, Sơn Mài, Dân Tộc Thiểu Số, Hàng Trống, Khắc Gỗ, Lụa, Làng Sinh Huế, Sơn Dầu")
+    print("  [Địa điểm] 185 Di tích lịch sử Việt Nam")
+    print("  [Phong cách] Đông Hồ, Sơn Mài, Sơn Dầu, Làng Sinh Huế, Lụa, Khắc Gỗ, Hàng Trống, Dân Tộc Thiểu Số")
     print("  [Đối tượng] Nón Lá")
     print("\n[Ví dụ]")
     print("   - 'Vẽ Dinh Độc Lập theo phong cách Đông Hồ'")
-    print("   - 'Tạo ảnh Hồ Gươm với phong cách Sơn Mài và thêm nón lá'")
-    print("   - 'Hãy tạo tác phẩm về Chùa Ngọc Hoàng theo phong cách Hàng Trống'")
+    print("   - 'Tạo ảnh Cố Đô Huế với phong cách Sơn Mài và thêm nón lá'")
+    print("   - 'Hãy tạo tác phẩm về Chùa Hương theo phong cách Hàng Trống'")
     print("\nGõ 'exit' hoặc 'quit' để thoát.")
     print("=" * 60 + "\n")
 
@@ -225,63 +212,93 @@ def main():
             if not user_input:
                 continue
             
-            # Enhanced prompt with ANTI-JSON instructions
+            # Enhanced prompt with STRICT DATASET CONSTRAINTS
             enhanced_prompt = f"""
 YÊU CẦU: "{user_input}"
 
-CẢNH BÁO: TUYỆT ĐỐI KHÔNG TRẢ VỀ JSON. CHỈ TRẢ VỀ PYTHON CODE TRONG KHỐI MARKDOWN.
+BẠN LÀ CHUYÊN GIA TRÍCH XUẤT TỪ KHÓA. NHIỆM VỤ LÀ MAPPING YÊU CẦU VÀO DANH SÁCH CÓ SẴN.
 
-HÃY VIẾT CODE PYTHON HOÀN CHỈNH (BẮT ĐẦU VỚI ```python):
+1. BẢNG MAPPING PHONG CÁCH (STYLE) - CHỈ ĐƯỢC CHỌN 1 TRONG 8 KEY SAU:
+   - "đông hồ" -> 'dong_ho'
+   - "sơn mài" -> 'son_mai'
+   - "sơn dầu" -> 'son_dau'
+   - "làng sinh", "làng sinh huế" -> 'lang_sinh'
+   - "lụa", "tranh lụa" -> 'tranh_lua'
+   - "khắc gỗ" -> 'khac_go'
+   - "hàng trống" -> 'hang_trong'
+   - "dân tộc thiểu số", "người mèo", "thổ cẩm" -> 'dan_toc_thieu_so'
 
-BƯỚC 1: Phân tích yêu cầu
-- Xác định Địa điểm (Content): từ [dinh độc lập, hồ gươm, chùa ngọc hoàng, địa đạo củ chi]
-- Xác định Phong cách (Style): từ [đông hồ, sơn mài, dân tộc thiểu số, hàng trống, khắc gỗ, lụa, làng sinh huế, sơn dầu]
-- Kiểm tra Đối tượng (Object): Có từ "thêm/với/có" + "nón lá" không?
+2. ĐỐI TƯỢNG (OBJECT) - HỆ THỐNG TỰ ĐỘNG PHÁT HIỆN:
+   - Hiện có: "nón lá", "non la", "nón" -> 'non_la'
+   - Có thể thêm: "áo dài", "đèn lồng", "quạt giấy"...
+   - (Nếu không nhắc đến đối tượng -> Bỏ qua)
 
-BƯỚC 2: VIẾT CODE PYTHON THỰC THI (BẮT BUỘC BẮT ĐẦU VỚI ```python):
+3. ĐỊA ĐIỂM (CONTENT) - TRONG DANH SÁCH 185 DI TÍCH:
+   - Hãy trích xuất TÊN DI TÍCH hoặc ĐỊA DANH trong câu.
+   - Ví dụ: "Dinh Độc Lập", "Cố Đô Huế", "Chùa Hương", "Vịnh Hạ Long"...
+   - Giữ nguyên tiếng Việt có dấu để tìm kiếm trong Database.
+
+HÃY VIẾT CODE PYTHON TRONG KHỐI MARKDOWN ĐỂ THỰC THI:
+(Lưu ý: Không giải thích, không dùng JSON, chỉ viết Code)
+
+QUAN TRỌNG - CHỮ KÝ HÀM (FUNCTION SIGNATURE):
+- get_random_image(category, keyword_vn) - CHỈ 2 THAM SỐ
+  Ví dụ: get_random_image('cnt', 'Dinh Độc Lập')
+  Ví dụ: get_random_image('sty', 'son_dau')
+  SAI: get_random_image('sty', 'Dinh Độc Lập', 'son_dau') ← TUYỆT ĐỐI KHÔNG!
 
 ```python
-# 1. BẮT BUỘC: Import các hàm cần thiết
+# 1. Import
 from agent_modules.data_manager import get_random_image
 from agent_modules.styleid_wrapper import run_style_transfer
 from agent_modules.object_insert import insert_object
 
-# 2. Tìm ảnh Content và Style
-# Lưu ý: category phải là 'cnt', 'sty', hoặc 'obj'
-content_img = get_random_image('cnt', '<địa_điểm>')  # VD: 'dinh độc lập'
-style_img = get_random_image('sty', '<phong_cách>')   # VD: 'đông hồ'
+# 2. Định nghĩa Key sau khi phân tích
+# User request: "{user_input}"
+style_key = '...'    # Điền key từ bảng Mapping trên (VD: 'son_dau', 'hang_trong')
+content_name = '...' # Điền tên di tích trích xuất được (VD: 'Chùa Một Cột')
 
-print(f"[Content Path] {{content_img}}")
-print(f"[Style Path] {{style_img}}")
+# 3. Tìm ảnh - CHÚ Ý: Mỗi hàm CHỈ 2 THAM SỐ (category, keyword)
+print(f"[INFO] Đang tìm ảnh cho: {{content_name}} theo phong cách {{style_key}}")
+content_img = get_random_image('cnt', content_name)  # 2 tham số: category='cnt', keyword=content_name
+style_img = get_random_image('sty', style_key)       # 2 tham số: category='sty', keyword=style_key
 
-# 3. Thực thi StyleID Style Transfer (mất vài phút)
-if content_img and style_img:
-    print("[INFO] Đang chạy StyleID... (có thể mất 2-3 phút)")
+if not content_img:
+    print(f"[ERROR] Không tìm thấy ảnh di tích: {{content_name}}")
+elif not style_img:
+    print(f"[ERROR] Không tìm thấy ảnh phong cách: {{style_key}}")
+else:
+    print(f"[Content Path] {{content_img}}")
+    print(f"[Style Path] {{style_img}}")
+
+    # 4. Chạy Style Transfer
     result = run_style_transfer(content_img, style_img)
     print(f"[Stylized Result] {{result}}")
+
+    # 5. Chèn Object (Tự động phát hiện từ user input)
+    from agent_modules.data_manager import detect_object_in_text
     
-    # 4. Chèn Object (chỉ khi người dùng yêu cầu)
-    # Kiểm tra xem có từ "thêm", "với", "có" không
-    if <có_thêm_object>:  # True/False tùy theo phân tích
-        obj_img = get_random_image('obj', 'nón lá')
-        if obj_img and result:
-            print("[INFO] Đang thêm đối tượng...")
+    detected_object = detect_object_in_text('{user_input}')
+    if detected_object:
+        obj_img = get_random_image('obj', detected_object)
+        if obj_img:
+            print(f"[Object Path] {{obj_img}}")
             final = insert_object(result, obj_img)
-            print(f"[Final Result] {{final}}")
+            if final:
+                print(f"[Final Result] {{final}}")
+            else:
+                print(f"[WARNING] Object insertion failed, using stylized result: {{result}}")
         else:
-            print("[WARNING] Không tìm thấy object image")
-    else:
-        print("[INFO] Không có yêu cầu thêm đối tượng")
-else:
-    print("[ERROR] Lỗi: Không tìm thấy ảnh content hoặc style")
+            print(f"[WARNING] Object folder not found for: {{detected_object}}")
 ```
 
 LƯU Ý QUAN TRỌNG:
 - PHẢI bắt đầu với ```python
 - PHẢI có dòng import ở đầu code
+- PHẢI điền đúng style_key từ 8 giá trị mapping
+- PHẢI điền content_name là tên di tích tiếng Việt có dấu
 - KHÔNG được trả về JSON
 - KHÔNG được chỉ giải thích
-- KHÔNG được định nghĩa lại các hàm
 - PHẢI thực thi code thật
 
 BẮT ĐẦU VIẾT CODE PYTHON NGAY (BẮT ĐẦU VỚI ```python):

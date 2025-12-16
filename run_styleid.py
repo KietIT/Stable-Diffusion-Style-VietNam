@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+"""
+StyleID - Style Injection in Diffusion
+Optimized for low VRAM (4GB RTX 3050) with 1024x1024 upscaling
+"""
+
 import argparse, os
 import torch
 import numpy as np
@@ -19,14 +25,30 @@ import pickle
 
 feat_maps = []
 
-def save_img_from_sample(model, samples_ddim, fname):
+def save_img_from_sample(model, samples_ddim, fname, target_size=(1024, 1024)):
+    """
+    Save image from latent samples with upscaling to target size
+    
+    Args:
+        model: The diffusion model
+        samples_ddim: Latent samples to decode
+        fname: Output filename
+        target_size: Target size for upscaling (default: 1024x1024)
+    """
     x_samples_ddim = model.decode_first_stage(samples_ddim)
     x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
     x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
     x_image_torch = torch.from_numpy(x_samples_ddim).permute(0, 3, 1, 2)
     x_sample = 255. * rearrange(x_image_torch[0].cpu().numpy(), 'c h w -> h w c')
     img = Image.fromarray(x_sample.astype(np.uint8))
+    
+    # UPSCALING: Resize to target size using high-quality LANCZOS resampling
+    if img.size != target_size:
+        print(f"Upscaling image from {img.size} to {target_size}...")
+        img = img.resize(target_size, resample=Image.Resampling.LANCZOS)
+    
     img.save(fname)
+    print(f"Saved upscaled image to: {fname}")
 
 def feat_merge(opt, cnt_feats, sty_feats, start_step=0):
     feat_maps = [{'config': {
@@ -48,7 +70,6 @@ def feat_merge(opt, cnt_feats, sty_feats, start_step=0):
             if ori_key[-1] == 'k' or ori_key[-1] == 'v':
                 feat_maps[i][ori_key] = sty_feat[ori_key]
     return feat_maps
-
 
 def load_img(path):
     image = Image.open(path).convert("RGB")
@@ -93,12 +114,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--cnt', default = './data/cnt')
     parser.add_argument('--sty', default = './data/sty')
-    parser.add_argument('--ddim_inv_steps', type=int, default=50, help='DDIM eta')
-    parser.add_argument('--save_feat_steps', type=int, default=50, help='DDIM eta')
-    parser.add_argument('--start_step', type=int, default=49, help='DDIM eta')
+    parser.add_argument('--ddim_inv_steps', type=int, default=50, help='DDIM inversion steps')
+    parser.add_argument('--save_feat_steps', type=int, default=50, help='Feature saving steps')
+    parser.add_argument('--start_step', type=int, default=49, help='Start step for feature injection')
     parser.add_argument('--ddim_eta', type=float, default=0.0, help='DDIM eta')
-    parser.add_argument('--H', type=int, default=512, help='image height, in pixel space')
-    parser.add_argument('--W', type=int, default=512, help='image width, in pixel space')
+    parser.add_argument('--H', type=int, default=512, help='image height, in pixel space (internal processing)')
+    parser.add_argument('--W', type=int, default=512, help='image width, in pixel space (internal processing)')
+    parser.add_argument('--output_H', type=int, default=1024, help='output image height after upscaling')
+    parser.add_argument('--output_W', type=int, default=1024, help='output image width after upscaling')
     parser.add_argument('--C', type=int, default=4, help='latent channels')
     parser.add_argument('--f', type=int, default=8, help='downsampling factor')
     parser.add_argument('--T', type=float, default=1.5, help='attention temperature scaling hyperparameter')
@@ -111,6 +134,7 @@ def main():
     parser.add_argument('--output_path', type=str, default='output')
     parser.add_argument("--without_init_adain", action='store_true')
     parser.add_argument("--without_attn_injection", action='store_true')
+    parser.add_argument("--low_vram_mode", action='store_true', help='Enable optimizations for low VRAM (4GB)')
     opt = parser.parse_args()
 
     feat_path_root = opt.precomputed
@@ -121,8 +145,26 @@ def main():
     if len(feat_path_root) > 0:
         os.makedirs(feat_path_root, exist_ok=True)
     
+    print("=" * 60)
+    print("StyleID - Style Transfer with Diffusion")
+    print("=" * 60)
+    if opt.low_vram_mode:
+        print("[LOW VRAM MODE] Enabled optimizations for 4GB VRAM")
+    print(f"Internal processing size: {opt.W}x{opt.H}")
+    print(f"Output upscaling size: {opt.output_W}x{opt.output_H}")
+    print("=" * 60)
+    
     model_config = OmegaConf.load(f"{opt.model_config}")
     model = load_model_from_config(model_config, f"{opt.ckpt}")
+
+    # VRAM OPTIMIZATION: Enable gradient checkpointing for low VRAM
+    if opt.low_vram_mode:
+        print("[OPTIMIZATION] Enabling gradient checkpointing...")
+        if hasattr(model.model.diffusion_model, 'enable_gradient_checkpointing'):
+            model.model.diffusion_model.enable_gradient_checkpointing()
+        
+        # Clear cache before processing
+        torch.cuda.empty_cache()
 
     self_attn_output_block_indices = list(map(int, opt.attn_layer.split(',')))
     ddim_inversion_steps = opt.ddim_inv_steps
@@ -226,6 +268,10 @@ def main():
                 cnt_feat = copy.deepcopy(feat_maps)
                 cnt_z_enc = feat_maps[0]['z_enc']
 
+            # VRAM OPTIMIZATION: Clear cache between images
+            if opt.low_vram_mode:
+                torch.cuda.empty_cache()
+
             with torch.no_grad():
                 with precision_scope("cuda"):
                     with model.ema_scope():
@@ -260,7 +306,16 @@ def main():
                         x_sample = 255. * rearrange(x_image_torch[0].cpu().numpy(), 'c h w -> h w c')
                         img = Image.fromarray(x_sample.astype(np.uint8))
 
-                        img.save(os.path.join(output_path, output_name))
+                        # UPSCALING: Resize to target output size
+                        target_size = (opt.output_W, opt.output_H)
+                        if img.size != target_size:
+                            print(f"Upscaling from {img.size} to {target_size} using LANCZOS...")
+                            img = img.resize(target_size, resample=Image.Resampling.LANCZOS)
+
+                        output_filepath = os.path.join(output_path, output_name)
+                        img.save(output_filepath)
+                        print(f"Saved upscaled image to: {output_filepath}")
+                        
                         if len(feat_path_root) > 0:
                             print("Save features")
                             if not os.path.isfile(cnt_feat_name):
@@ -269,6 +324,10 @@ def main():
                             if not os.path.isfile(sty_feat_name):
                                 with open(sty_feat_name, 'wb') as h:
                                     pickle.dump(sty_feat, h)
+
+            # VRAM OPTIMIZATION: Clear cache after each image pair
+            if opt.low_vram_mode:
+                torch.cuda.empty_cache()
 
     print(f"Total end: {time.time() - begin}")
 
