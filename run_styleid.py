@@ -25,7 +25,7 @@ import pickle
 
 feat_maps = []
 
-def save_img_from_sample(model, samples_ddim, fname, target_size=(1024, 1536)):
+def save_img_from_sample(model, samples_ddim, fname, target_size=(1024, 1024)):
     """
     Save image from latent samples with upscaling to target size
     
@@ -120,7 +120,7 @@ def main():
     parser.add_argument('--ddim_eta', type=float, default=0.0, help='DDIM eta')
     parser.add_argument('--H', type=int, default=512, help='image height, in pixel space (internal processing)')
     parser.add_argument('--W', type=int, default=512, help='image width, in pixel space (internal processing)')
-    parser.add_argument('--output_H', type=int, default=1536, help='output image height after upscaling')
+    parser.add_argument('--output_H', type=int, default=1024, help='output image height after upscaling')
     parser.add_argument('--output_W', type=int, default=1024, help='output image width after upscaling')
     parser.add_argument('--C', type=int, default=4, help='latent channels')
     parser.add_argument('--f', type=int, default=8, help='downsampling factor')
