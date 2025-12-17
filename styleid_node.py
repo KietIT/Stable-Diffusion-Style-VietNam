@@ -17,7 +17,7 @@ class StyleID_Wrapper_Node:
     @classmethod
     def INPUT_TYPES(s):
         default_python = "/opt/conda/envs/styleid_env/bin/python" 
-        default_root = "/workspace/StyleID"
+        default_root = "/workspace/Stable-Diffusion-Style-VietNam"
         if os.name == 'nt': 
             default_python = "D:/Anaconda/envs/StyleID/python.exe"
             default_root = "D:/Job_Parttime/StyleID"
