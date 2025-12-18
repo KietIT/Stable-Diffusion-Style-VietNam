@@ -128,7 +128,7 @@ def main():
     parser.add_argument('--gamma', type=float, default=0.75, help='query preservation hyperparameter')
     parser.add_argument("--attn_layer", type=str, default='6,7,8,9,10,11', help='injection attention feature layers')
     parser.add_argument('--model_config', type=str, default='models/ldm/stable-diffusion-v1/v1-inference.yaml', help='model config')
-    parser.add_argument('--precomputed', type=str, default='./precomputed_feats', help='save path for precomputed feature')
+    parser.add_argument('--precomputed', type=str, default='', help='save path for precomputed feature')
     parser.add_argument('--ckpt', type=str, default='models/ldm/stable-diffusion-v1/model.ckpt', help='model checkpoint')
     parser.add_argument('--precision', type=str, default='autocast', help='choices: ["full", "autocast"]')
     parser.add_argument('--output_path', type=str, default='output')
