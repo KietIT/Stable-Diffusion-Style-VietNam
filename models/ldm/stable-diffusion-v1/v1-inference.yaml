@@ -66,11 +66,11 @@ model:
         lossconfig:
           target: torch.nn.Identity
 
-    cond_stage_config:
-      target: ldm.modules.encoders.modules.FrozenCLIPEmbedder
-    
-    # Up lên pod thì thay cond_stage_config thành:
     # cond_stage_config:
     #   target: ldm.modules.encoders.modules.FrozenCLIPEmbedder
-    #   params:
-    #     version: /workspace/Stable-Diffusion-Style-VietNam/openai/clip-vit-large-patch14
+    
+    # Up lên pod thì thay cond_stage_config thành:
+    cond_stage_config:
+      target: ldm.modules.encoders.modules.FrozenCLIPEmbedder
+      params:
+        version: /workspace/Stable-Diffusion-Style-VietNam/openai/clip-vit-large-patch14
