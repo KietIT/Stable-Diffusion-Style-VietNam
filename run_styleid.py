@@ -25,7 +25,7 @@ import pickle
 
 feat_maps = []
 
-def save_img_from_sample(model, samples_ddim, fname, target_size=(1024, 1024)):
+def save_img_from_sample(model, samples_ddim, fname, target_size=(512, 512)):
     """
     Save image from latent samples with upscaling to target size
     
@@ -120,15 +120,15 @@ def main():
     parser.add_argument('--ddim_eta', type=float, default=0.0, help='DDIM eta')
     parser.add_argument('--H', type=int, default=512, help='image height, in pixel space (internal processing)')
     parser.add_argument('--W', type=int, default=512, help='image width, in pixel space (internal processing)')
-    parser.add_argument('--output_H', type=int, default=1024, help='output image height after upscaling')
-    parser.add_argument('--output_W', type=int, default=1024, help='output image width after upscaling')
+    parser.add_argument('--output_H', type=int, default=512, help='output image height after upscaling')
+    parser.add_argument('--output_W', type=int, default=512, help='output image width after upscaling')
     parser.add_argument('--C', type=int, default=4, help='latent channels')
     parser.add_argument('--f', type=int, default=8, help='downsampling factor')
     parser.add_argument('--T', type=float, default=1.5, help='attention temperature scaling hyperparameter')
     parser.add_argument('--gamma', type=float, default=0.75, help='query preservation hyperparameter')
     parser.add_argument("--attn_layer", type=str, default='6,7,8,9,10,11', help='injection attention feature layers')
     parser.add_argument('--model_config', type=str, default='models/ldm/stable-diffusion-v1/v1-inference.yaml', help='model config')
-    parser.add_argument('--precomputed', type=str, default='./precomputed_feats', help='save path for precomputed feature')
+    parser.add_argument('--precomputed', type=str, default='', help='save path for precomputed feature')
     parser.add_argument('--ckpt', type=str, default='models/ldm/stable-diffusion-v1/model.ckpt', help='model checkpoint')
     parser.add_argument('--precision', type=str, default='autocast', help='choices: ["full", "autocast"]')
     parser.add_argument('--output_path', type=str, default='output')
