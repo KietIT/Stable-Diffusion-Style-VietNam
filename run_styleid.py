@@ -3,7 +3,7 @@
 StyleID - Style Injection in Diffusion
 Optimized for low VRAM (4GB RTX 3050) with 1024x1024 upscaling
 """
-
+import random
 import argparse, os
 import torch
 import numpy as np
@@ -221,8 +221,21 @@ def main():
     precision_scope = autocast if opt.precision=="autocast" else nullcontext
     uc = model.get_learned_conditioning([""])
     shape = [opt.C, opt.H // opt.f, opt.W // opt.f]
-    sty_img_list = sorted(os.listdir(opt.sty))
+    # sty_img_list = sorted(os.listdir(opt.sty))
+    # cnt_img_list = sorted(os.listdir(opt.cnt))
+    
+    # Lấy danh sách toàn bộ file trong thư mục style (ví dụ thư mục son_mai)
+    all_styles_in_folder = sorted(os.listdir(opt.sty))
     cnt_img_list = sorted(os.listdir(opt.cnt))
+
+    # --- LOGIC RANDOM: Chỉ chọn 1 ảnh ngẫu nhiên ---
+    sty_img_list = []
+    if len(all_styles_in_folder) > 0:
+        # Bốc ngẫu nhiên 1 file
+        chosen_style = random.choice(all_styles_in_folder)
+        sty_img_list = [chosen_style] 
+    else:
+        print(f"Warning: No images found in {opt.sty}")
 
     begin = time.time()
     for sty_name in sty_img_list:
