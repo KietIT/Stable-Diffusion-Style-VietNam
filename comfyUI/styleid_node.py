@@ -20,7 +20,7 @@ class StyleID_Wrapper_Node:
             "required": {
                 "content_image": ("IMAGE",), 
                 "style_name": (STYLE_LIST,),
-                "python_path": ("STRING", {"default": "/opt/conda/envs/styleid_env/bin/python"}),
+                "python_path": ("STRING", {"default": "/workspace/miniconda/envs/styleid_env/bin/python"}),
                 "project_root": ("STRING", {"default": "/workspace/Stable-Diffusion-Style-VietNam"}),
             },
         }
@@ -91,4 +91,5 @@ class StyleID_Wrapper_Node:
         return (torch.from_numpy(np.array(Image.open(final_img_path).convert("RGB")).astype(np.float32) / 255.0)[None,],)
 
 NODE_CLASS_MAPPINGS = { "StyleID_Wrapper": StyleID_Wrapper_Node }
+
 NODE_DISPLAY_NAME_MAPPINGS = { "StyleID_Wrapper": "🇻🇳 Heritage Art StyleID Runner V3" }
