@@ -46,12 +46,22 @@ class StyleID_Wrapper_Node:
         # 2. CHỌN STYLE NGẪU NHIÊN
         data_dir = os.path.join(project_root, "data", "sty", style_name)
         try:
-            valid_ext = ('.png', '.jpg', '.jpeg')
-            all_imgs = [f for f in os.listdir(data_dir) if f.lower().endswith(valid_ext)]
-            if not all_imgs: raise Exception("Folder style rỗng!")
-            chosen = random.choice(all_imgs)
-            shutil.copy2(os.path.join(data_dir, chosen), os.path.join(temp_style_dir, chosen))
-        except Exception as e: raise Exception(f"Lỗi Style: {e}")
+            all_imgs = sorted([f for f in os.listdir(data_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
+            
+            # GIẢI PHÁP: Tạo bộ random mới dựa trên nano giây hiện tại
+            import random as native_random
+            r = native_random.Random()
+            r.seed() # Làm mới hạt giống bằng thời gian thực
+            
+            chosen_style_file = r.choice(all_imgs)
+            print(f"🎲 [StyleID] Đã bốc ngẫu nhiên ảnh style: {chosen_style_file}")
+            
+            # Copy ảnh đã chọn vào folder tạm
+            shutil.copy2(os.path.join(data_dir, chosen_style_file), os.path.join(temp_style_dir, chosen_style_file))
+            
+            # Lưu lại đường dẫn ảnh đã chọn để truyền vào script
+            chosen_style_path = os.path.join(temp_style_dir, chosen_style_file)
+        except Exception as e: raise Exception(f"Style Error: {e}")
 
         # 3. LƯU ẢNH INPUT (Tên UUID để tránh Cache browser)
         unique_name = f"input_{uuid.uuid4().hex[:8]}.png"
@@ -61,9 +71,9 @@ class StyleID_Wrapper_Node:
 
         # 4. CẤU HÌNH LỆNH CHẠY
         cmd = [
-            python_path, os.path.join(project_root, "run_styleid.py"),
-            "--cnt", temp_input_dir,
-            "--sty", temp_style_dir, 
+            python_path, "-u", os.path.join(project_root, "run_styleid.py"),
+            "--cnt", os.path.join(temp_input_dir, unique_name), # Truyền thẳng file content
+            "--sty", chosen_style_path, # TRUYỀN THẲNG FILE STYLE ĐÃ CHỌN
             "--output_path", output_dir,
             "--model_config", os.path.join(project_root, "models/ldm/stable-diffusion-v1/v1-inference.yaml"),
             "--ckpt", os.path.join(project_root, "models/ldm/stable-diffusion-v1/model.ckpt"),
