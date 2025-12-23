@@ -10,9 +10,9 @@ class StyleID_Fast_Node:
         return {
             "required": {
                 "content_image": ("IMAGE",), 
-                "style_name": (["son_dau", "son_mai", "dong_ho", "hang_trong", "dan_toc_thieu_so", "lua", "khac_go"],),
+                "style_name": (["son_dau", "son_mai", "dong_ho", "hang_trong", "dan_toc_thieu_so", "lua", "khac_go", "lang_sinh_hue"]),
                 "server_url": ("STRING", {"default": "http://127.0.0.1:8000/transform"}),
-                "start_step": ("INT", {"default": 34}), 
+                "start_step": ("INT", {"default": 49}), 
                 "gamma": ("FLOAT", {"default": 0.75}),
             },
         }
